@@ -262,6 +262,34 @@ public class Modelo {
 	// Requerimientos
 	//-------------------------------------------------------------------------------------------------------------
 
+	
+	public ILista<YoutubeVideo> req1(String pais, int num, String categoria){
+		ILista<YoutubeVideo> x = new ArregloDinamico<YoutubeVideo>(num);
+		int z = 0;
+		boolean stop = false;
+		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
+		ILista<YoutubeVideo> videosDeLaCategoria = TablaLinearProbingVideos.get(categoria);
+		//o.ordenarQuickSort(videosDeLaCategoria, y,false);
+		//Determinar el id de la categoria O(N) 
+		for(int i=1; i<=categorias.size()&&!stop;i++){
+			Categoria actual = categorias.getElement(i);
+			if(actual.darNombre().compareToIgnoreCase(categoria)==0){
+				if (z >= num){stop = true;}
+				else
+				{
+					if(videosDeLaCategoria.getElement(i).darPais().compareToIgnoreCase(pais)==0)
+					{
+						z++;
+						x.addLast(videosDeLaCategoria.getElement(i));
+						o.ordenarQuickSort(x, y, false);}
+				}
+			}
+		}
+		return x;
+		}
+		
+		
+	
 public ILista<YoutubeVideo> req2(String categoria, String pais){
 	String key = pais+"-"+categoria;
 	if(tabla.keySet().isPresent(key)==-1)
