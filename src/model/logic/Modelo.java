@@ -23,6 +23,8 @@ import model.data_structures.IArregloDinamico;
 import model.data_structures.ILista;
 import model.data_structures.ITablaSimbolos;
 import model.data_structures.ListaEncadenada;
+import model.data_structures.TablaHashLinearProbing;
+import model.data_structures.TablaHashSeparateChaining;
 import model.data_structures.TablaSimbolos;
 import model.utils.Ordenamiento;
 
@@ -39,20 +41,27 @@ public class Modelo {
 	private ILista<YoutubeVideo> datos;
 	private ITablaSimbolos<String, ILista<YoutubeVideo>> tabla;
 	private Ordenamiento<YoutubeVideo> o;
+    private TablaHashSeparateChaining<String, ILista <YoutubeVideo>> TablaSeparateVideos;
+	private TablaHashLinearProbing<String, ILista<YoutubeVideo>> TablaLinearProbingVideos;
 	
-	public Modelo()
+
+	private ArregloDinamico<Categoria> categoriaArreglo;
+	
+	public Modelo(int capacidad)
 	{
 		datos = new ArregloDinamico<YoutubeVideo>();
 		categorias = new ArregloDinamico<Categoria>();
 		tabla = new TablaSimbolos<String,ILista<YoutubeVideo>>();
 		o = new Ordenamiento<YoutubeVideo>();
+		TablaLinearProbingVideos = new TablaHashLinearProbing<String,ILista<YoutubeVideo>>(capacidad);
+		TablaSeparateVideos = new TablaHashSeparateChaining<String, ILista<YoutubeVideo>>(capacidad);
 		
 	}	
 	
-	public String cargarDatos() throws IOException, ParseException{
+	public void cargarDatosConLinearProbing() throws IOException, ParseException{
 		Reader in = new FileReader(VIDEO);
 		int c = 0;
-		long tot = 0;
+		long total = 0;
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);	
 		for (CSVRecord record : records) {
 		    String id = record.get(0);
@@ -83,27 +92,104 @@ public class Modelo {
 		    String cat = darNombreCategoria(nuevo.darId_categoria());
 		    String key = nuevo.darPais().trim()+"-"+cat.trim();
 		    int aux2 = tabla.keySet().isPresent(key);
-		    if(aux2 ==-1){
+		    ILista<YoutubeVideo> lista = TablaLinearProbingVideos.get(key);
+		    if(lista != null){ boolean x = false;
+		    for(int i = 1; i <= lista.size() && !x; i++){
+		    	if(lista.getElement(i).darTitulo().compareToIgnoreCase(titulo)==0){ x = true;
+		    } }
+		    	if(!x){
+		    		lista.addLast(nuevo);
+		    		TablaLinearProbingVideos.cambiarValor(key, lista);;
+		    		c++;
+		    	}
+		    }
+		    else{
 		    	ArregloDinamico<YoutubeVideo> valor = new ArregloDinamico<YoutubeVideo>();
 		    	valor.addLast(nuevo);
 		    	long miliI = System.currentTimeMillis();
-		    	tabla.put(key, valor);
+		    	TablaLinearProbingVideos.put(key, valor);
 		    	long miliF = System.currentTimeMillis();
-		    	tot += (miliF-miliI);
-		    }
-		    else{
-		    	ArregloDinamico<YoutubeVideo> valor = (ArregloDinamico<model.logic.YoutubeVideo>) tabla.get(key);
-		    	valor.addLast(nuevo);
+		    	total += (miliF-miliI);
 		    	//long miliI = System.currentTimeMillis();
 		    	//tabla.put(key, valor);
 		    	//long miliF = System.currentTimeMillis();
-		    	//tot += (miliF-miliI); 
+		    	//total	 += (miliF-miliI); 
 		    }
 		    c++;
 		    }
+		    System.out.println("Se han cargado los datos \n " + "Video Totales" + c);
+		    System.out.println("Tiempo de ejecución promedio en milisegundos :" + (total/(c-1)));
+		    System.out.println("Tamanio de la tabla de hash :" + TablaLinearProbingVideos.size());
 		}
-		float f = (float) ((tot*1.0)/tabla.size());
-		return "Tiempo de ejecución promedio: "+f+" milisegundos, \nTotal llaves: "+ tabla.size()+" \nTotal datos cargados: "+c ;
+		//float f = (float) ((total*1.0)/tabla.size());
+		//return "Tiempo de ejecución promedio: "+f+" milisegundos, \nTotal llaves: "+ tabla.size()+" \nTotal datos cargados: "+c ;
+	}
+	
+	public void cargarDatosConSeparateChaining() throws IOException, ParseException{
+		Reader in = new FileReader(VIDEO);
+		int c = 0;
+		long total = 0;
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);	
+		for (CSVRecord record : records) {
+		    String id = record.get(0);
+		    String trending = record.get(1);
+		    String titulo = record.get(2);
+		    String canal = record.get(3);
+		    String YoutubeVideo = record.get(4);
+		    String fechaP = record.get(5);
+		    String tags = record.get(6);
+		    String vistas = record.get(7);
+		    String likes  = record.get(8);
+		    String dislikes = record.get(9);
+		    String coment = record.get(10);
+		    String foto = record.get(11);
+		    String nComent = record.get(12);
+		    String rating = record.get(13);
+		    String vidErr = record.get(14);
+		    String descripcion = record.get(15);
+		    String pais = record.get(16);
+		    //--------------------------------------------------------------------
+		    if(!id.equals("video_id")){
+		    SimpleDateFormat formato = new SimpleDateFormat("yyy/MM/dd");
+		    String[] aux = trending.split("\\.");
+		    Date fechaT = formato.parse(aux[0]+"/"+aux[2]+"/"+aux[1]);
+		    SimpleDateFormat formato2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");		   
+		    Date fechaPu = formato2.parse(fechaP);
+		    YoutubeVideo nuevo = new YoutubeVideo(id, fechaT, titulo, canal, Integer.parseInt(YoutubeVideo), fechaPu, tags, Integer.parseInt(vistas), Integer.parseInt(likes), Integer.parseInt(dislikes), Integer.parseInt(coment), foto, (nComent.equals("FALSE")?false:true), (rating.equals("FALSE")?false:true), (vidErr.equals("FALSE")?false:true), descripcion, pais);
+		    String cat = darNombreCategoria(nuevo.darId_categoria());
+		    String key = nuevo.darPais().trim()+"-"+cat.trim();
+		    int aux2 = tabla.keySet().isPresent(key);
+		    ILista<YoutubeVideo> lista = TablaSeparateVideos.get(key);
+		    if(lista != null){ boolean x = false;
+		    for(int i = 1; i <= lista.size() && !x; i++){
+		    	if(lista.getElement(i).darTitulo().compareToIgnoreCase(titulo)==0){ x = true;
+		    } }
+		    	if(!x){
+		    		lista.addLast(nuevo);
+		    		TablaSeparateVideos.cambiarValor(key, lista);
+		    		c++;
+		    	}
+		    }
+		    else{
+		    	ArregloDinamico<YoutubeVideo> valor = new ArregloDinamico<YoutubeVideo>();
+		    	valor.addLast(nuevo);
+		    	long miliI = System.currentTimeMillis();
+		    	TablaSeparateVideos.put(key, valor);
+		    	long miliF = System.currentTimeMillis();
+		    	total += (miliF-miliI);
+		    	//long miliI = System.currentTimeMillis();
+		    	//tabla.put(key, valor);
+		    	//long miliF = System.currentTimeMillis();
+		    	//total	 += (miliF-miliI); 
+		    }
+		    c++;
+		    }
+		    System.out.println("Se han cargado los datos \n " + "Video Totales" + c);
+		    System.out.println("Tiempo de ejecución promedio en milisegundos :" + (total/(c-1)));
+		    System.out.println("Tamanio de la tabla de hash :" + TablaSeparateVideos.size());
+		}
+		//float f = (float) ((total*1.0)/tabla.size());
+		//return "Tiempo de ejecución promedio: "+f+" milisegundos, \nTotal llaves: "+ tabla.size()+" \nTotal datos cargados: "+c ;
 	}
 
 	public void cargarId() throws IOException, FileNotFoundException{
@@ -171,7 +257,39 @@ public class Modelo {
 		}
 		return categorias.getElement(elem);
 	}
+	
+	//-------------------------------------------------------------------------------------------------------------
+	// Requerimientos
+	//-------------------------------------------------------------------------------------------------------------
 
+	
+	public ILista<YoutubeVideo> req1(String pais, int num, String categoria){
+		ILista<YoutubeVideo> x = new ArregloDinamico<YoutubeVideo>(num);
+		int z = 0;
+		boolean stop = false;
+		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
+		ILista<YoutubeVideo> videosDeLaCategoria = TablaLinearProbingVideos.get(categoria);
+		//o.ordenarQuickSort(videosDeLaCategoria, y,false);
+		//Determinar el id de la categoria O(N) 
+		for(int i=1; i<=categorias.size()&&!stop;i++){
+			Categoria actual = categorias.getElement(i);
+			if(actual.darNombre().compareToIgnoreCase(categoria)==0){
+				if (z >= num){stop = true;}
+				else
+				{
+					if(videosDeLaCategoria.getElement(i).darPais().compareToIgnoreCase(pais)==0)
+					{
+						z++;
+						x.addLast(videosDeLaCategoria.getElement(i));
+						o.ordenarQuickSort(x, y, false);}
+				}
+			}
+		}
+		return x;
+		}
+		
+		
+	
 public ILista<YoutubeVideo> req2(String categoria, String pais){
 	String key = pais+"-"+categoria;
 	if(tabla.keySet().isPresent(key)==-1)

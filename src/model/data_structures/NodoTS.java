@@ -23,10 +23,16 @@ public class NodoTS<K extends Comparable<K>, V> implements Comparable<NodoTS<K,V
 	}
 	
 	
-	
 	/** La comparación de dos NodoTS depende de sus llaves */
 	public int compareTo(NodoTS<K, V> otro) {		
 		return this.llave.compareTo(otro.llave);
+	}
+	public void setEmpty(){
+		//TODO Auto-generated method stub
+	}
+    public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

@@ -8,9 +8,10 @@ import jdk.nashorn.internal.runtime.arrays.NumericElements;
 
 public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements ITablaSimbolos <K, V> {
 	
-	private int n;
-	private int m;
-	private int p;
+	private int n;   //Numero de de parejas K-V
+	private int m;   //Tamanio de la tabla
+	private int p;   //
+	private int factorDeCarga;
     private ArregloDinamico<ArregloDinamico<NodoTS<K,V>>> tablaHash; 
     
     /*
@@ -90,6 +91,36 @@ public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements IT
     	}
     } 
     
+  /*  public void put(K k, V v) 
+	{
+		int posicion = hash(k);
+		ILista<NodoTS<K,V>> listaSeparateChaining = tablaHash.getElement(posicion);
+		if(listaSeparateChaining != null && !contains(k))
+		{
+			if(listaSeparateChaining.size()== "(factorCarga)")
+			{
+				rehash();
+				put(k,v);
+			}
+			else
+			{
+				listaSeparateChaining.addLast(new NodoTS<K, V>(k, v));
+				tamanoActual++;
+			}
+			
+		}
+		else
+		{
+			tablaHash.changeElement(posicion, new ArregloDinamico<NodoTS<K,V>>());
+			tablaHash.getElement(posicion).addLast(new NodoTS<K,V>(k,v));
+			n++;
+			
+		}
+		
+		
+		
+	}*/
+    
 
     /**
      * @param  key la llave a buscar
@@ -107,6 +138,25 @@ public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements IT
         }
     	return null;
     } 
+    
+    /*
+     * public V get(K k) 
+	{
+		V x = null;
+		int posicion = hash(k);
+		ILista<NodoTS<K,V>> listaSeparateChaining = listaNodos.getElement(posicion);
+		if(listaSC != null)
+		{
+			for(int i = 1; i <= listaSeparateChaining.size() && x == null; i++)
+			{
+				if(listaSClistaSeparateChaining.getElement(i).darLlave().compareTo(k)==0){
+					x = listaSClistaSeparateChaining.getElement(i).getValue();
+				}
+			}
+		}
+		return x;
+	}
+     */
       
     
     /**
@@ -139,6 +189,24 @@ public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements IT
     public boolean contains(K key) {
     	return (get(key)==null)?false:true;
     } 
+    
+ /*   public boolean contains(K k) 
+	{
+		boolean x = false;
+		int posicion = hash(k);
+		ILista<NodoTS<K,V>> listaSeparateChaining = listaNodos.getElement(posicion);
+		if(listaSeparateChaining != null)
+		{
+			for(int i = 1; i <= listaSeparateChaining.size() && !x; i++)
+			{
+				if(listaSeparateChaining.getElement(i).darLlave().compareTo(k)==0)
+				{
+					x = true;
+				}
+			}
+		}
+		return x;
+	}*/
 
     /**
      * @return el numero de parejas K-V en la tabla de simbolos.
@@ -166,6 +234,19 @@ public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements IT
     	}
     	return llaves;
     } 
+    /*
+	 * public ILista<K> keySet() 
+	{
+		ILista<K> keys = new ArregloDinamico<>(n);
+		for(int i = 1; i <= n;i++){
+			if(tablaHash.getElement(i) != null)
+			{
+				keys.addLast(tablaHash.getElement(i).darLLave());
+			}
+		}
+		return keys;
+	}
+	 */
 
 	@Override
 	public ILista<V> valueSet() {
@@ -177,7 +258,18 @@ public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements IT
 			}
 		}
 		return value;
-	} 
+	}
+	/*
+	 * public ILista<V> valueSet() 
+	{
+		ILista<K> values = new ArregloDinamico<>(n);
+		for(int i = 1; i <= n;i++){
+			if(tablaHash.getElement(i) != null)
+			{values.addLast(tablaHash.getElement(i).darValor());}
+		}
+		return values;
+	}*/
+	
 
 	
 	@Override
@@ -188,6 +280,46 @@ public class TablaHashSeparateChaining<K extends Comparable<K>, V> implements IT
 		int b = r.nextInt(p);
 		return (Math.abs(a*(h)+b)%p)%m;
 	}
+	
+	public void reHash(){
+		TablaHashSeparateChaining<K,V> x = new TablaHashSeparateChaining<>(nextPrime(m));
+		                          ArregloDinamico<K> keys = (ArregloDinamico<K>) keySet();
+		 for(int i=0; i<keys.size();i++){ x.put(keys.getElement(i), get(keys.getElement(i))); } }
+	
+	/*
+	 * private void rehash()
+	{
+		//ILista<NodoTS<K,V>> nodos = darNodos();
+		n = 0;
+		m = nextPrime(m);
+		tablaHash = new ArregloDinamico<>(m);
+		
+		for(int i = 1; i<= tamanoTabla;i++)
+		{
+			tablaHash.addLast(null);
+		}
+		
+		NodoTS<K, V> actual;
+		while((actual = nodos.removeFirst())!= null)
+		{
+			put(actual.getKey(),actual.getValue());
+		}
+	
+	 */
+	
+	public void cambiarValor(K k, V v)
+	{
+		boolean x = false;
+		int posicion = hash(k);
+		ILista<NodoTS<K,V>> actual = tablaHash.getElement(posicion);
+		if(actual != null)
+		{
+			for(int i = 1; i <= actual.size() && !x; i++)
+			{
+				if(actual.getElement(i).darLlave().compareTo(k)==0)
+				{
+					actual.getElement(i).asignarValor(v);;
+				}}}}
 
 }
 

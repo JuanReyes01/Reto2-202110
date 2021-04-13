@@ -21,10 +21,10 @@ public class Controller {
 	 * Crear la vista y el modelo del proyecto
 	 * @param capacidad tamaNo inicial del arreglo
 	 */
-	public Controller ()
+	public Controller (int capacidad)
 	{
 		view = new View();
-		modelo = new Modelo();
+		modelo = new Modelo(capacidad);
 	}
 
 
@@ -42,14 +42,24 @@ public class Controller {
 			int option = lector.nextInt();
 			switch(option){
 				case 1:
+					view.printMessage("Ingresa 1 para usar Linear Probing o 2 para usar Separate Chaining");
 					view.printMessage("Cargando datos en el sistema...");
-					String r;
+					String r = lector.next();
 				try {
-					modelo.cargarId();
-					r = modelo.cargarDatos();
+					if(r.equals("1")){
+					modelo.cargarDatosConLinearProbing();;
 					view.printMessage("------------------------------------------");
 					view.printMessage(r);
+					view.printMessage("Primer video: \n titulo: "+modelo.darArreglo().firstElement().darTitulo()
+							+" \n Canal: "+modelo.darArreglo().firstElement().darCanal()
+							+" \n fecha trending: "+modelo.darArreglo().firstElement().darFechaT()
+							+" \n país: "+modelo.darArreglo().firstElement().darPais()
+							+" \n Visitas: "+modelo.darArreglo().firstElement().darViews()
+							+" \n Likes: "+modelo.darArreglo().firstElement().darLikes()
+							+" \n Dislikes: "+modelo.darArreglo().firstElement().darDislikes());
 					view.printMessage("-------");
+					modelo.cargarId();
+					view.printCategorias(modelo);
 				} catch (IOException e) {
 					
 					e.printStackTrace();
@@ -59,14 +69,17 @@ public class Controller {
 					break;
 
 				case 2:
-					view.printMessage("Ingrese: pais, categoria");
+					view.printMessage("--------- \nSeleccione el requerimiento: ");
 					dato = lector.next();
-					String[] i = dato.split(",");
-					ILista<YoutubeVideo> l  = modelo.req2(i[1].replace("-", " ").trim(), i[0].replace("-", " ").trim());
-					if(l!=null)
-						view.imprimirVideoReq1(l,l.size());
-					else
-						view.printMessage("Caso especial: no hay pais con la categoria seleccionada(o escribiste mal)");
+					if(dato.equals("1")){
+						view.printMessage("Ingrese un país, numero y categoria(Str,int,str):");
+						dato = lector.next();
+						String[] i = dato.split(",");
+						ILista<YoutubeVideo> r1 = modelo.req1(i[0].replace("-"," ").trim(),Integer.parseInt(i[1]),i[2].replace("-"," ").trim());
+						if(r1!=null){
+							view.imprimirVideoReq1(r1,r1.size());
+						}
+					}
 					break;
 					
 				case 3:
