@@ -45,7 +45,6 @@ public class Modelo {
 	private TablaHashLinearProbing<String, ILista<YoutubeVideo>> TablaLinearProbingVideos;
 	
 
-	private ArregloDinamico<Categoria> categoriaArreglo;
 	
 	public Modelo(int capacidad)
 	{
@@ -258,6 +257,16 @@ public class Modelo {
 		return categorias.getElement(elem);
 	}
 	
+	public int darTamanioSeparateChaining()
+	{
+		return TablaSeparateVideos.size();
+	}
+
+	public int darTamanoLinearProbing()
+	{
+		return TablaLinearProbingVideos.size();
+	}
+	
 	//-------------------------------------------------------------------------------------------------------------
 	// Requerimientos
 	//-------------------------------------------------------------------------------------------------------------
@@ -268,7 +277,7 @@ public class Modelo {
 		int z = 0;
 		boolean stop = false;
 		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
-		ILista<YoutubeVideo> videosDeLaCategoria = TablaLinearProbingVideos.get(categoria);
+		ILista<YoutubeVideo> videosDeLaCategoria = TablaSeparateVideos.get(categoria);
 		//o.ordenarQuickSort(videosDeLaCategoria, y,false);
 		//Determinar el id de la categoria O(N) 
 		for(int i=1; i<=categorias.size()&&!stop;i++){
@@ -290,14 +299,81 @@ public class Modelo {
 		
 		
 	
-public ILista<YoutubeVideo> req2(String categoria, String pais){
-	String key = pais+"-"+categoria;
-	if(tabla.keySet().isPresent(key)==-1)
-		return null;
-	else{
-		return tabla.get(key);
-	}
-}
+	 public String req2(String pais){    
+		 return null;
+	 }
+	 
+	 /**
+		 * Busca el video que ha sido mas tendencia en una categoria especifica.
+		 * @param categoria Categoria especifica en la que estan los videos.
+		 * @return Como respuesta deben aparecer el video con mayor tendencia de la categoria.  
+		 */
+		public String req3 (String categoria){
+			ILista<YoutubeVideo> videosDeLaCategoria = TablaSeparateVideos.get(categoria.toLowerCase());
+            Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
+            int repeticiones = 1;
+			YoutubeVideo repetidoMayorVeces = videosDeLaCategoria.getElement(1); 
+			int actual = 1; 
+            for (int i = 2; i < videosDeLaCategoria.size(); i++) 
+			{ if (y.compare(videosDeLaCategoria.getElement(i),videosDeLaCategoria.getElement(i-1)) == 0) actual++; 
+				else 
+				{ 
+					if (actual > repeticiones) 
+					{ 
+						repeticiones = actual; 
+						repetidoMayorVeces = videosDeLaCategoria.getElement(i-1);
+					} 
+					actual = 1; 
+				} 
+			} 
+            if (actual > repeticiones) 
+			{ 
+				repeticiones = actual;
+				repetidoMayorVeces = videosDeLaCategoria.getElement(videosDeLaCategoria.size() - 1);
+			} 
+
+			
+			return (repetidoMayorVeces != null)? " Titulo: "+ repetidoMayorVeces.darTitulo()+"\n Chanel_Title: "+ repetidoMayorVeces.darCanal()+"\n country: "+ repetidoMayorVeces.darPais()+" \n Dias: "+ repetidoMayorVeces:"";
+			}
+		
+		
+		
+
+		/**
+		 * Busca los n videos con mas views que son tendencia en un determinado pais y que posean la etiqueta designada.
+		 * @param num Numero de videos que se desean ver. num > 0
+		 * @param etiqueta Tag especifica que tienen los videos. != " " y != null
+		 * @return Como respuesta deben aparecer los n videos que cumplen las caracteristicas y su respectiva informacion.  	
+		 */
+		public ILista<YoutubeVideo> req4(String pais, int num, String etiqueta) {
+			ILista<YoutubeVideo> listaVideosFiltrados = new ArregloDinamico<>(10);
+			for(int i = 1; i <= categorias.size();i++)
+			{ILista<YoutubeVideo> videosDeLaCategoria = TablaSeparateVideos.get(categorias.getElement(i).darNombre().toLowerCase());
+				if(videosDeLaCategoria != null)
+				{for(int j = 1; j <= videosDeLaCategoria.size();j++)
+					{YoutubeVideo actual = videosDeLaCategoria.getElement(j);
+						if(actual.darTags().contains(etiqueta))
+						{String[] etiquetas = actual.darTags().split("\\|");
+							for(int k = 0; k <etiquetas.length-1;k++)
+							{if(etiquetas[k].compareToIgnoreCase(etiqueta)==0)
+								{listaVideosFiltrados.addLast(actual);
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			if(!listaVideosFiltrados.isEmpty())
+			{
+				Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
+				o.ordenarQuickSort(listaVideosFiltrados, y, false);
+				}
+			return listaVideosFiltrados.sublista(num);
+		}
+			
+		
+	
 
 public int rand(){
 	return (int) (Math.random() * (datos.size())+1);
@@ -317,6 +393,8 @@ public float pruebaGet(){
 		total+=(miliF-miliI);
 		i++;
 	}
+	
+
 	while(i<1000){
 		String key = (char)rand()+""+(char)rand();
 		miliI = System.currentTimeMillis();
@@ -327,7 +405,81 @@ public float pruebaGet(){
 	}
 	return (float) ((total*1.0)/i);
 }
+public long pruebaGetSeparateChaining()
+{
+	long total = 0;
+	String[] paises =new String[5];
+	paises[0] ="japan";
+	paises[1]="germany";
+	paises[2]="india";
+	paises[3]="canada";
+	paises[4]="france";
+	for(int i=0;i<1000;i++)
+	{
+		long start = 0;
+		long stop = 0;
+		if (i <700)
+		{
+			int n1 = (int) (Math.random()*5);
+			int n2 = (int)(Math.random()*(31)+1);
+			String key = (paises[n1] + categorias.getElement(n2).darNombre()).toLowerCase();
+			start = System.currentTimeMillis();
+			TablaSeparateVideos.get(key);
+			stop = System.currentTimeMillis();
+			
+		}
+		else
+		{
+			int n2 = (int)(Math.random()*(31)+1);
+			String key = ("lakaaiaana" + categorias.getElement(n2).darNombre()).toLowerCase();
+			
+			start = System.currentTimeMillis();
+			TablaSeparateVideos.get(key);
+			stop = System.currentTimeMillis();
+		}
+		total += (stop-start);
+	}
+	return(total);
 }
+
+public long pruebaGetLinearProbing()
+{
+	long total = 0;
+	String[] paises =new String[5];
+	paises[0] ="japan";
+	paises[1]="germany";
+	paises[2]="india";
+	paises[3]="canada";
+	paises[4]="france";
+	for(int i=0;i<1000;i++)
+	{
+		long start = 0;
+		long stop = 0;
+		if (i <700)
+		{
+			int n1 = (int) (Math.random()*5);
+			int n2 = (int)(Math.random()*(31)+1);
+			String key = (paises[n1]+categorias.getElement(n2).darNombre()).toLowerCase();
+			start = System.currentTimeMillis();
+			TablaLinearProbingVideos.get(key);
+			stop = System.currentTimeMillis();
+			
+		}
+		else
+		{
+			int n2 = (int)(Math.random()*(31)+1);
+			String key = ("hola mundo"+categorias.getElement(n2).darNombre()).toLowerCase();
+			
+			start = System.currentTimeMillis();
+			TablaLinearProbingVideos.get(key);
+			stop = System.currentTimeMillis();
+		}
+		total += (stop-start);
+	}
+	return(total);
+}
+}
+
 
 
 		
