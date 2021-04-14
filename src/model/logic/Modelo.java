@@ -191,17 +191,22 @@ public class Modelo {
 	
 	public ILista<YoutubeVideo> req1(String pais, int num, String categoria){
 		
+		long miliI = System.currentTimeMillis();
 		pais = pais.toLowerCase();
 		categoria = categoria.toLowerCase();
 		String k = pais.trim()+"-"+categoria.trim();
 		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
 		ILista<YoutubeVideo> videos= tabla.get(k);
 		videos = o.ordenarQuickSort(videos, y, false);
+		long miliF = System.currentTimeMillis();
+    	long tot = (miliF-miliI); 
+    	System.out.println("Tiempo de ejecucion req1: " + tot +" -- Tamanio tabla: " +tabla.size());
 		return videos.sublista(num);
-	
+		
 		}
 		
 	public String req2(String pais){
+		long miliI = System.currentTimeMillis();
 		int max = 0;
 		YoutubeVideo mayor = null;
 		if(tabla.keySet().isPresent(pais)==-1)
@@ -235,8 +240,9 @@ public class Modelo {
 //			}
 //			i++;
 		}
-		
-		
+		long miliF = System.currentTimeMillis();
+    	long tot = (miliF-miliI); 
+    	System.out.println("Tiempo de ejecucion req2: " + tot+" -- Tamanio tabla: " +tabla.size()+"--otro tamanio:"+numRepetidos.size());
 		}
 		return "Titulo: "+mayor.darTitulo()+" \nCanal: "+mayor.darCanal()+" \nPais: "+mayor.darPais()+" \nDias: "+ max;
 	}
@@ -246,6 +252,7 @@ public class Modelo {
 	 * @return Como respuesta deben aparecer el video con mayor tendencia de la categoria.  
 	 */
 	public String req3 (String categoria){
+		long miliI = System.currentTimeMillis();
 		int max = 0;
 		YoutubeVideo mayor = null;
 		 ArregloDinamico<YoutubeVideo> t = (ArregloDinamico<YoutubeVideo>) tabla.get(categoria);
@@ -278,7 +285,10 @@ public class Modelo {
 //				}
 //				i++;
 			}
-		return (mayor != null)? " Titulo: "+ mayor.darTitulo()+"\n Chanel_Title: "+ mayor.darCanal()+"\n categoria: "+ mayor.darId_categoria()+" \n Dias: "+ max:"";
+			long miliF = System.currentTimeMillis();
+	    	long tot = (miliF-miliI); 
+	    	System.out.println("Tiempo de ejecucion req3: " + tot+" -- Tamanio tabla: " +tabla.size()+"--otro tamanio:"+numRepetidos.size());
+	    	return (mayor != null)? " Titulo: "+ mayor.darTitulo()+"\n Chanel_Title: "+ mayor.darCanal()+"\n categoria: "+ mayor.darId_categoria()+" \n Dias: "+ max:"";
 		}
 	
 	public ArregloDinamico<String> tags(YoutubeVideo y){
@@ -298,6 +308,7 @@ public class Modelo {
 	 * @return Como respuesta deben aparecer los n videos que cumplen las caracteristicas y su respectiva informacion.  	
 	 */
 	public ILista<YoutubeVideo> req4(String etiqueta) {
+		long miliI = System.currentTimeMillis();
 		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXLikes();
 		TablaHashSeparateChaining<String, ILista<YoutubeVideo>> e = new TablaHashSeparateChaining<>(datos.size(), 1);
 		ArregloDinamico<String> tg = new ArregloDinamico<String>();
@@ -317,6 +328,9 @@ public class Modelo {
 			}
 		}
 		ArregloDinamico<YoutubeVideo> ord = (ArregloDinamico<YoutubeVideo>) o.ordenarQuickSort(e.get(etiqueta.trim()),y,false);
+		long miliF = System.currentTimeMillis();
+    	long tot = (miliF-miliI); 
+    	System.out.println("Tiempo de ejecucion req4: " + tot+" --Tamanio tabla"+tabla.size()+"--tamanio otra"+e.size());
 		return ord;
 	}
 
