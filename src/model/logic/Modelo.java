@@ -208,32 +208,32 @@ public class Modelo {
 			return null;
 		else{
 		 ArregloDinamico<YoutubeVideo> t = (ArregloDinamico<YoutubeVideo>) tabla.get(pais);
-//		TablaHashSeparateChaining<YoutubeVideo, Integer> numRepetidos = new TablaHashSeparateChaining<>(t.size(), 1.5);
+		TablaHashSeparateChaining<String, Integer> numRepetidos = new TablaHashSeparateChaining<>(t.size(), 1.5);
 		
-//		for(int i =1; i<=t.size();i++){
-//			int a = (numRepetidos.get(t.getElement(i))==null)?0:numRepetidos.get(t.getElement(i));
-//			int aux = 1+a;
-//			numRepetidos.put(t.getElement(i), aux);
-//			if(max<aux){
-//				mayor = t.getElement(i);
-//				max = aux;
+		for(int i =1; i<=t.size();i++){
+			int a = (numRepetidos.get(t.getElement(i).darVideoID())==null)?0:numRepetidos.get(t.getElement(i).darVideoID());
+			int aux = 1+a;
+			numRepetidos.put(t.getElement(i).darVideoID(), aux);
+			if(max<aux){
+				mayor = t.getElement(i);
+				max = aux;
+			}
+//		int i= 1;
+//		while(i<=t.size()){
+//			YoutubeVideo actual = t.getElement(i);
+//			int eliminados = 1;
+//			for(int j=i+1;j<=t.size();j++){
+//				if(actual.darVideoID().equals(t.getElement(j).darVideoID())){
+//					t.deleteElement(j);
+//					eliminados++;
+//				}
 //			}
-		int i= 1;
-		while(i<=t.size()){
-			YoutubeVideo actual = t.getElement(i);
-			int eliminados = 1;
-			for(int j=i+1;j<=t.size();j++){
-				if(actual.darVideoID().equals(t.getElement(j).darVideoID())){
-					t.deleteElement(j);
-					eliminados++;
-				}
-			}
-			t.deleteElement(i);
-			if(eliminados>max){
-				max= eliminados;
-				mayor = actual;
-			}
-			i++;
+//			t.deleteElement(i);
+//			if(eliminados>max){
+//				max= eliminados;
+//				mayor = actual;
+//			}
+//			i++;
 		}
 		
 		
@@ -249,22 +249,34 @@ public class Modelo {
 		int max = 0;
 		YoutubeVideo mayor = null;
 		 ArregloDinamico<YoutubeVideo> t = (ArregloDinamico<YoutubeVideo>) tabla.get(categoria);
-		 int i= 1;
-			while(i<=t.size()){
-				YoutubeVideo actual = t.getElement(i);
-				int eliminados = 1;
-				for(int j=i+1;j<=t.size();j++){
-					if(actual.darVideoID().equals(t.getElement(j).darVideoID())){
-						t.deleteElement(j);
-						eliminados++;
-					}
+		 
+		 TablaHashSeparateChaining<String, Integer> numRepetidos = new TablaHashSeparateChaining<>(t.size(), 1.5);
+			
+			for(int i =1; i<=t.size();i++){
+				int a = (numRepetidos.get(t.getElement(i).darVideoID())==null)?0:numRepetidos.get(t.getElement(i).darVideoID());
+				int aux = 1+a;
+				numRepetidos.put(t.getElement(i).darVideoID(), aux);
+				if(max<aux){
+					mayor = t.getElement(i);
+					max = aux;
 				}
-				t.deleteElement(i);
-				if(eliminados>max){
-					max= eliminados;
-					mayor = actual;
-				}
-				i++;
+		 
+//		 int i= 1;
+//			while(i<=t.size()){
+//				YoutubeVideo actual = t.getElement(i);
+//				int eliminados = 1;
+//				for(int j=i+1;j<=t.size();j++){
+//					if(actual.darVideoID().equals(t.getElement(j).darVideoID())){
+//						t.deleteElement(j);
+//						eliminados++;
+//					}
+//				}
+//				t.deleteElement(i);
+//				if(eliminados>max){
+//					max= eliminados;
+//					mayor = actual;
+//				}
+//				i++;
 			}
 		return (mayor != null)? " Titulo: "+ mayor.darTitulo()+"\n Chanel_Title: "+ mayor.darCanal()+"\n categoria: "+ mayor.darId_categoria()+" \n Dias: "+ max:"";
 		}
@@ -274,7 +286,7 @@ public class Modelo {
 		ArregloDinamico<String> tags = new ArregloDinamico<String>();
 		for(int i=0; i<tag.length;i++){
 			//System.out.println(tag[i].replace("\"", ""));
-			tags.addLast(tag[i].replace("\"", "").trim());
+			tags.addLast(tag[i].replace("\"", "").trim().toLowerCase());
 		}
 		return tags;
 	}
