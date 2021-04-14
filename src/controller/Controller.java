@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Scanner;
 
+import model.data_structures.ArregloDinamico;
 import model.data_structures.ILista;
 import model.logic.Modelo;
 import model.logic.YoutubeVideo;
@@ -20,11 +21,14 @@ public class Controller {
 	/**
 	 * Crear la vista y el modelo del proyecto
 	 * @param capacidad tamaNo inicial del arreglo
+	 * @throws IOException 
+	 * @throws ParseException 
 	 */
-	public Controller (int capacidad)
+	public Controller () throws ParseException, IOException
 	{
 		view = new View();
-		modelo = new Modelo(capacidad);
+		modelo = new Modelo();
+		modelo.cargar();
 	}
 
 
@@ -42,50 +46,72 @@ public class Controller {
 			int option = lector.nextInt();
 			switch(option){
 				case 1:
-					view.printMessage("Ingresa 1 para usar Linear Probing o 2 para usar Separate Chaining");
-					view.printMessage("Cargando datos en el sistema...");
+					view.printMessage("Ingresa 1 para LinearProbing, Ingresa 2 para SeparateChaining");
 					String r = lector.next();
+				String res;
 				try {
-					if(r.equals("1")){
-					modelo.cargarDatosConLinearProbing();;
-					view.printMessage("------------------------------------------");
-					view.printMessage(r);
-					view.printMessage("Primer video: \n titulo: "+modelo.darArreglo().firstElement().darTitulo()
-							+" \n Canal: "+modelo.darArreglo().firstElement().darCanal()
-							+" \n fecha trending: "+modelo.darArreglo().firstElement().darFechaT()
-							+" \n país: "+modelo.darArreglo().firstElement().darPais()
-							+" \n Visitas: "+modelo.darArreglo().firstElement().darViews()
-							+" \n Likes: "+modelo.darArreglo().firstElement().darLikes()
-							+" \n Dislikes: "+modelo.darArreglo().firstElement().darDislikes());
-					view.printMessage("-------");
 					modelo.cargarId();
-					view.printCategorias(modelo);
-				} catch (IOException e) {
-					
+					res = (r.equals("1"))?modelo.cargarDatosConLinearProbing():modelo.cargarDatosConSeparateChaining(1,"");
+					view.printMessage(res);
+					view.printMessage("Total categorias:" +modelo.darCategorias().size());
+				} catch (IOException | ParseException e) {
 					e.printStackTrace();
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}											
-					break;
-
+				}
+				
 				case 2:
-					view.printMessage("--------- \nSeleccione el requerimiento: ");
-					dato = lector.next();
-					if(dato.equals("1")){
-						view.printMessage("Ingrese un país, numero y categoria(Str,int,str):");
-						dato = lector.next();
-						String[] i = dato.split(",");
-						ILista<YoutubeVideo> r1 = modelo.req1(i[0].replace("-"," ").trim(),Integer.parseInt(i[1]),i[2].replace("-"," ").trim());
-						if(r1!=null){
-							view.imprimirVideoReq1(r1,r1.size());
+					view.printMessage("Cual requerimiento se quiere probar?");
+					r = lector.next();
+					if(r.equals("1")){
+						view.printMessage("Ingrese: pais, numero, categoria");
+						r = lector.next();
+						String[] s = r.split(",");
+						ArregloDinamico<YoutubeVideo> d = (ArregloDinamico<YoutubeVideo>) modelo.req1(s[0].toLowerCase().trim(), Integer.parseInt(s[1]), s[2].toLowerCase().trim());
+						view.imprimirVideoReq1(d, d.size());
+					}					
+					else if(r.equals("2")){
+						try {
+							modelo.cargarDatosConSeparateChaining(2,"");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
+						view.printMessage("Ingrese: pais");
+						r = lector.next();
+						//String[] s = r.split(",");
+						view.printMessage(modelo.req2(r.toLowerCase().trim()));
+						
+					}
+					else if(r.equals("3")){
+							try {
+								modelo.cargarDatosConSeparateChaining(3, "");
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (ParseException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						view.printMessage("Ingrese: categoria");
+						r = lector.next();
+						String[] s = r.split(",");
+						//ArregloDinamico<YoutubeVideo> d = (ArregloDinamico<YoutubeVideo>) 
+						view.printMessage(modelo.req3(r.toLowerCase().trim()));
+						//view.imprimirVideoReq1(d, d.size());
+					}
+					else if(r.equals("4")){
+						view.printMessage("Ingrese: tag(Exacto)");
+						r = lector.next();
+						String[] s = r.split(",");
+						ArregloDinamico<YoutubeVideo> d = (ArregloDinamico<YoutubeVideo>) modelo.req4(r.trim());
+						view.imprimirVideoReq(d,d.size());
+						//view.imprimirVideoReq1(d, d.size());
 					}
 					break;
-					
 				case 3:
-					view.printMessage("Ingrese: pais, categoria");
-					view.printMessage("El tiempo promedio es: "+modelo.pruebaGet()+" Milisegundos");
-					break;
+					
 				case 4:
 					view.printMessage("Pruebas de desempeño");
 					break;

@@ -43,25 +43,19 @@ public class Modelo {
 	private Ordenamiento<YoutubeVideo> o;
     private TablaHashSeparateChaining<String, ILista <YoutubeVideo>> TablaSeparateVideos;
 	private TablaHashLinearProbing<String, ILista<YoutubeVideo>> TablaLinearProbingVideos;
-	
+
 
 	private ArregloDinamico<Categoria> categoriaArreglo;
 	
-	public Modelo(int capacidad)
-	{
+	public Modelo()
+	{    int capacidad = 1001;
 		datos = new ArregloDinamico<YoutubeVideo>();
 		categorias = new ArregloDinamico<Categoria>();
-		tabla = new TablaSimbolos<String,ILista<YoutubeVideo>>();
 		o = new Ordenamiento<YoutubeVideo>();
-		TablaLinearProbingVideos = new TablaHashLinearProbing<String,ILista<YoutubeVideo>>(capacidad);
-		TablaSeparateVideos = new TablaHashSeparateChaining<String, ILista<YoutubeVideo>>(capacidad);
-		
 	}	
 	
-	public void cargarDatosConLinearProbing() throws IOException, ParseException{
+	public void cargar() throws ParseException, IOException{
 		Reader in = new FileReader(VIDEO);
-		int c = 0;
-		long total = 0;
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);	
 		for (CSVRecord record : records) {
 		    String id = record.get(0);
@@ -89,107 +83,39 @@ public class Modelo {
 		    SimpleDateFormat formato2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");		   
 		    Date fechaPu = formato2.parse(fechaP);
 		    YoutubeVideo nuevo = new YoutubeVideo(id, fechaT, titulo, canal, Integer.parseInt(YoutubeVideo), fechaPu, tags, Integer.parseInt(vistas), Integer.parseInt(likes), Integer.parseInt(dislikes), Integer.parseInt(coment), foto, (nComent.equals("FALSE")?false:true), (rating.equals("FALSE")?false:true), (vidErr.equals("FALSE")?false:true), descripcion, pais);
-		    String cat = darNombreCategoria(nuevo.darId_categoria());
-		    String key = nuevo.darPais().trim()+"-"+cat.trim();
-		    int aux2 = tabla.keySet().isPresent(key);
-		    ILista<YoutubeVideo> lista = TablaLinearProbingVideos.get(key);
-		    if(lista != null){ boolean x = false;
-		    for(int i = 1; i <= lista.size() && !x; i++){
-		    	if(lista.getElement(i).darTitulo().compareToIgnoreCase(titulo)==0){ x = true;
-		    } }
-		    	if(!x){
-		    		lista.addLast(nuevo);
-		    		TablaLinearProbingVideos.cambiarValor(key, lista);;
-		    		c++;
-		    	}
+		    datos.addLast(nuevo);
 		    }
-		    else{
-		    	ArregloDinamico<YoutubeVideo> valor = new ArregloDinamico<YoutubeVideo>();
-		    	valor.addLast(nuevo);
-		    	long miliI = System.currentTimeMillis();
-		    	TablaLinearProbingVideos.put(key, valor);
-		    	long miliF = System.currentTimeMillis();
-		    	total += (miliF-miliI);
-		    	//long miliI = System.currentTimeMillis();
-		    	//tabla.put(key, valor);
-		    	//long miliF = System.currentTimeMillis();
-		    	//total	 += (miliF-miliI); 
-		    }
-		    c++;
-		    }
-		    System.out.println("Se han cargado los datos \n " + "Video Totales" + c);
-		    System.out.println("Tiempo de ejecución promedio en milisegundos :" + (total/(c-1)));
-		    System.out.println("Tamanio de la tabla de hash :" + TablaLinearProbingVideos.size());
-		}
-		//float f = (float) ((total*1.0)/tabla.size());
-		//return "Tiempo de ejecución promedio: "+f+" milisegundos, \nTotal llaves: "+ tabla.size()+" \nTotal datos cargados: "+c ;
+		} 
+	}
+		
+	
+	
+	
+	public String cargarDatosConLinearProbing() throws IOException, ParseException{
+		return ""+datos.size()+"";
 	}
 	
-	public void cargarDatosConSeparateChaining() throws IOException, ParseException{
-		Reader in = new FileReader(VIDEO);
-		int c = 0;
-		long total = 0;
-		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);	
-		for (CSVRecord record : records) {
-		    String id = record.get(0);
-		    String trending = record.get(1);
-		    String titulo = record.get(2);
-		    String canal = record.get(3);
-		    String YoutubeVideo = record.get(4);
-		    String fechaP = record.get(5);
-		    String tags = record.get(6);
-		    String vistas = record.get(7);
-		    String likes  = record.get(8);
-		    String dislikes = record.get(9);
-		    String coment = record.get(10);
-		    String foto = record.get(11);
-		    String nComent = record.get(12);
-		    String rating = record.get(13);
-		    String vidErr = record.get(14);
-		    String descripcion = record.get(15);
-		    String pais = record.get(16);
-		    //--------------------------------------------------------------------
-		    if(!id.equals("video_id")){
-		    SimpleDateFormat formato = new SimpleDateFormat("yyy/MM/dd");
-		    String[] aux = trending.split("\\.");
-		    Date fechaT = formato.parse(aux[0]+"/"+aux[2]+"/"+aux[1]);
-		    SimpleDateFormat formato2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");		   
-		    Date fechaPu = formato2.parse(fechaP);
-		    YoutubeVideo nuevo = new YoutubeVideo(id, fechaT, titulo, canal, Integer.parseInt(YoutubeVideo), fechaPu, tags, Integer.parseInt(vistas), Integer.parseInt(likes), Integer.parseInt(dislikes), Integer.parseInt(coment), foto, (nComent.equals("FALSE")?false:true), (rating.equals("FALSE")?false:true), (vidErr.equals("FALSE")?false:true), descripcion, pais);
-		    String cat = darNombreCategoria(nuevo.darId_categoria());
-		    String key = nuevo.darPais().trim()+"-"+cat.trim();
-		    int aux2 = tabla.keySet().isPresent(key);
-		    ILista<YoutubeVideo> lista = TablaSeparateVideos.get(key);
-		    if(lista != null){ boolean x = false;
-		    for(int i = 1; i <= lista.size() && !x; i++){
-		    	if(lista.getElement(i).darTitulo().compareToIgnoreCase(titulo)==0){ x = true;
-		    } }
-		    	if(!x){
-		    		lista.addLast(nuevo);
-		    		TablaSeparateVideos.cambiarValor(key, lista);
-		    		c++;
-		    	}
-		    }
-		    else{
-		    	ArregloDinamico<YoutubeVideo> valor = new ArregloDinamico<YoutubeVideo>();
-		    	valor.addLast(nuevo);
-		    	long miliI = System.currentTimeMillis();
-		    	TablaSeparateVideos.put(key, valor);
-		    	long miliF = System.currentTimeMillis();
-		    	total += (miliF-miliI);
-		    	//long miliI = System.currentTimeMillis();
-		    	//tabla.put(key, valor);
-		    	//long miliF = System.currentTimeMillis();
-		    	//total	 += (miliF-miliI); 
-		    }
-		    c++;
-		    }
-		    System.out.println("Se han cargado los datos \n " + "Video Totales" + c);
-		    System.out.println("Tiempo de ejecución promedio en milisegundos :" + (total/(c-1)));
-		    System.out.println("Tamanio de la tabla de hash :" + TablaSeparateVideos.size());
+	public String cargarDatosConSeparateChaining(int k, String tg) throws IOException, ParseException{
+		tabla = new TablaHashSeparateChaining<>(datos.size(), 1.5);
+		for(int i=1; i<datos.size();i++){
+			YoutubeVideo nuevo = datos.getElement(i);
+			String cat = darNombreCategoria(nuevo.darId_categoria());
+			
+			String key = (k==1)?nuevo.darPais().trim().toLowerCase()+"-"+cat.trim().toLowerCase():
+				          (k==2)?nuevo.darPais().trim().toLowerCase():
+				        	(k==3)?cat.trim().toLowerCase(): tg;
+			ArregloDinamico<YoutubeVideo> aux2 = (ArregloDinamico<YoutubeVideo>) tabla.get(key);
+			if(aux2 == null){
+				ArregloDinamico<YoutubeVideo> valor = new ArregloDinamico<YoutubeVideo>();
+				valor.addLast(nuevo);
+				tabla.put(key, valor);
+			}
+			else{
+				aux2.addLast(nuevo); 
+			}			
 		}
-		//float f = (float) ((total*1.0)/tabla.size());
-		//return "Tiempo de ejecución promedio: "+f+" milisegundos, \nTotal llaves: "+ tabla.size()+" \nTotal datos cargados: "+c ;
+
+		return "TamaÃ±o de la tabla: "+tabla.size()+"";
 	}
 
 	public void cargarId() throws IOException, FileNotFoundException{
@@ -264,40 +190,123 @@ public class Modelo {
 
 	
 	public ILista<YoutubeVideo> req1(String pais, int num, String categoria){
-		ILista<YoutubeVideo> x = new ArregloDinamico<YoutubeVideo>(num);
-		int z = 0;
-		boolean stop = false;
+		
+		pais = pais.toLowerCase();
+		categoria = categoria.toLowerCase();
+		String k = pais.trim()+"-"+categoria.trim();
 		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXViews();
-		ILista<YoutubeVideo> videosDeLaCategoria = TablaLinearProbingVideos.get(categoria);
-		//o.ordenarQuickSort(videosDeLaCategoria, y,false);
-		//Determinar el id de la categoria O(N) 
-		for(int i=1; i<=categorias.size()&&!stop;i++){
-			Categoria actual = categorias.getElement(i);
-			if(actual.darNombre().compareToIgnoreCase(categoria)==0){
-				if (z >= num){stop = true;}
-				else
-				{
-					if(videosDeLaCategoria.getElement(i).darPais().compareToIgnoreCase(pais)==0)
-					{
-						z++;
-						x.addLast(videosDeLaCategoria.getElement(i));
-						o.ordenarQuickSort(x, y, false);}
+		ILista<YoutubeVideo> videos= tabla.get(k);
+		videos = o.ordenarQuickSort(videos, y, false);
+		return videos.sublista(num);
+	
+		}
+		
+	public String req2(String pais){
+		int max = 0;
+		YoutubeVideo mayor = null;
+		if(tabla.keySet().isPresent(pais)==-1)
+			return null;
+		else{
+		 ArregloDinamico<YoutubeVideo> t = (ArregloDinamico<YoutubeVideo>) tabla.get(pais);
+//		TablaHashSeparateChaining<YoutubeVideo, Integer> numRepetidos = new TablaHashSeparateChaining<>(t.size(), 1.5);
+		
+//		for(int i =1; i<=t.size();i++){
+//			int a = (numRepetidos.get(t.getElement(i))==null)?0:numRepetidos.get(t.getElement(i));
+//			int aux = 1+a;
+//			numRepetidos.put(t.getElement(i), aux);
+//			if(max<aux){
+//				mayor = t.getElement(i);
+//				max = aux;
+//			}
+		int i= 1;
+		while(i<=t.size()){
+			YoutubeVideo actual = t.getElement(i);
+			int eliminados = 1;
+			for(int j=i+1;j<=t.size();j++){
+				if(actual.darVideoID().equals(t.getElement(j).darVideoID())){
+					t.deleteElement(j);
+					eliminados++;
+				}
+			}
+			t.deleteElement(i);
+			if(eliminados>max){
+				max= eliminados;
+				mayor = actual;
+			}
+			i++;
+		}
+		
+		
+		}
+		return "Titulo: "+mayor.darTitulo()+" \nCanal: "+mayor.darCanal()+" \nPais: "+mayor.darPais()+" \nDias: "+ max;
+	}
+	/**
+	 * Busca el video que ha sido mas tendencia en una categoria especifica.
+	 * @param categoria Categoria especifica en la que estan los videos.
+	 * @return Como respuesta deben aparecer el video con mayor tendencia de la categoria.  
+	 */
+	public String req3 (String categoria){
+		int max = 0;
+		YoutubeVideo mayor = null;
+		 ArregloDinamico<YoutubeVideo> t = (ArregloDinamico<YoutubeVideo>) tabla.get(categoria);
+		 int i= 1;
+			while(i<=t.size()){
+				YoutubeVideo actual = t.getElement(i);
+				int eliminados = 1;
+				for(int j=i+1;j<=t.size();j++){
+					if(actual.darVideoID().equals(t.getElement(j).darVideoID())){
+						t.deleteElement(j);
+						eliminados++;
+					}
+				}
+				t.deleteElement(i);
+				if(eliminados>max){
+					max= eliminados;
+					mayor = actual;
+				}
+				i++;
+			}
+		return (mayor != null)? " Titulo: "+ mayor.darTitulo()+"\n Chanel_Title: "+ mayor.darCanal()+"\n categoria: "+ mayor.darId_categoria()+" \n Dias: "+ max:"";
+		}
+	
+	public ArregloDinamico<String> tags(YoutubeVideo y){
+		String[] tag = y.darTags().split("\\|");
+		ArregloDinamico<String> tags = new ArregloDinamico<String>();
+		for(int i=0; i<tag.length;i++){
+			//System.out.println(tag[i].replace("\"", ""));
+			tags.addLast(tag[i].replace("\"", "").trim());
+		}
+		return tags;
+	}
+	
+	/**
+	 * Busca los n videos con mas likes que son tendencia en un determinado pais y que posean la etiqueta designada.
+	 * @param num Numero de videos que se desean ver. num > 0
+	 * @param etiqueta Tag especifica que tienen los videos. != " " y != null
+	 * @return Como respuesta deben aparecer los n videos que cumplen las caracteristicas y su respectiva informacion.  	
+	 */
+	public ILista<YoutubeVideo> req4(String etiqueta) {
+		Comparator<YoutubeVideo> y = new YoutubeVideo.ComparadorXLikes();
+		TablaHashSeparateChaining<String, ILista<YoutubeVideo>> e = new TablaHashSeparateChaining<>(datos.size(), 1);
+		ArregloDinamico<String> tg = new ArregloDinamico<String>();
+		for(int i=1;i<=datos.size();i++){
+			tg = tags(datos.getElement(i));
+			for(int j=1;j< tg.size();j++){
+				if(e.get(tg.getElement(j))==null){
+					ArregloDinamico<YoutubeVideo> a = new ArregloDinamico<YoutubeVideo>();
+					a.addLast(datos.getElement(i));
+					e.put(tg.getElement(j), a);
+				}
+				else{
+					ArregloDinamico<YoutubeVideo> a = (ArregloDinamico<YoutubeVideo>) e.get(tg.getElement(j));
+					a.addLast(datos.getElement(i));
+					e.put(tg.getElement(j), a);
 				}
 			}
 		}
-		return x;
-		}
-		
-		
-	
-public ILista<YoutubeVideo> req2(String categoria, String pais){
-	String key = pais+"-"+categoria;
-	if(tabla.keySet().isPresent(key)==-1)
-		return null;
-	else{
-		return tabla.get(key);
+		ArregloDinamico<YoutubeVideo> ord = (ArregloDinamico<YoutubeVideo>) o.ordenarQuickSort(e.get(etiqueta.trim()),y,false);
+		return ord;
 	}
-}
 
 public int rand(){
 	return (int) (Math.random() * (datos.size())+1);

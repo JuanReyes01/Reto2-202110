@@ -36,7 +36,7 @@ public class View
 		 * @param l, lista de los videos que se quieren imprimir.
 		 * @param s, numero de videos de la lista que se quieren imprimir
 		 */
-		public void imprimirVideoReq1(ILista<YoutubeVideo> l, int s){
+		public void imprimirVideoReq(ILista<YoutubeVideo> l, int s){
 			System.out.println("=====================================");
 			System.out.println("LISTA VIDEOS:");
 			System.out.println("=====================================");
@@ -44,14 +44,17 @@ public class View
 				YoutubeVideo a = (YoutubeVideo) l.getElement(i); 
 				System.out.println("Video #"+i);
 				System.out.println(" title: "+a.darTitulo());
+				System.out.println(" canal: "+a.darCanal());
+				System.out.println(" publicacion: "+a.darFechaP());
 				System.out.println(" views: "+a.darViews());
 				System.out.println(" likes: "+a.darLikes());
 				System.out.println(" dislikes: "+a.darDislikes());
+				System.out.println(" tags: "+a.darTags());
 			}
 			System.out.println("=====================================");
 		}
 
-		public void imprimirVideoReq4(ILista<YoutubeVideo> l, int s){
+		public void imprimirVideoReq1(ILista<YoutubeVideo> l, int s){
 			System.out.println("=====================================");
 			System.out.println("LISTA VIDEOS:");
 			System.out.println("=====================================");
@@ -64,7 +67,6 @@ public class View
 				System.out.println(" views: "+a.darViews());
 				System.out.println(" likes: "+a.darLikes());
 				System.out.println(" dislikes: "+a.darDislikes());
-				System.out.println(" tags: "+a.darTags());			
 			}
 			System.out.println("=====================================");
 		}
